@@ -7,7 +7,7 @@ const MovieSchema = new mongoose.Schema({
     bannerImage: { type: String, required: true }, 
     description: { type: String, required: true },
     genre: [{ type: String, required: true }],
-    rating: { type: Number, required: true },  // Changed from String to Number
+    rating: { type: Number, required: true }, 
 });
 
 const Movie = mongoose.model('Movies', MovieSchema);
