@@ -33,7 +33,7 @@ const createMovie = async (req, res) => {
 
 const getMovieById = async (req, res) => {
     try {
-        const movie = await Movie.findById(req.params.id); // Fetch movie by ID
+        const movie = await Movie.findById(req.params.id);
         if (!movie) {
             return res.status(404).json({ message: 'Movie not found' });
         }
@@ -63,8 +63,7 @@ const getMovieYOR = async (req, res) => {
             { $group: {
                 _id: '$release',
                 avgRating: { $avg: '$rating' }, 
-                movies: { $push: { title: '$title', rating: '$rating', name: '$name',image:'$bannerImage' } } // Collect movie details
-            }},
+                movies: { $push: { title: '$title', rating: '$rating', name: '$name',image:'$bannerImage' } }             }},
             { $sort: { 'movies.rating': -1 } } 
         ]);
         
@@ -85,11 +84,44 @@ const getMovieYOR = async (req, res) => {
     }
 };
 
+const getMovieByGenre=async(req,res)=>{
+    try {
+        const genre = req.params.genre;
+        const movies=await Movie.aggregate([
+            {$unwind:'$genre'},
+            {$group:{
+                _id:'$genre',
+                movieCount:{$sum:1},
+                movies:{$push:'$name'},
+                
 
+            }},
+            {$addFields:{genre:'$_id'}},
+            {$project:{_id:0}},
+            {$sort:{movieCount:-1}},
+            //{$limit:7}
+            {$match:{genre:genre}}
+        ])
+        res.status(200).json({
+            status:"Success",
+            count:movies.length,
+            data:{
+               
+                movies
+            }
+
+        })
+    } catch (error) {
+        res.status(500).json({
+            status: "fail",
+            message: error.message
+        });
+    }
+}
 
 const deleteMovieById = async (req, res) => {
     try {
-        const deletedMovie = await Movie.findByIdAndDelete(req.params.id); // Delete movie by ID
+        const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
         if (!deletedMovie) {
             return res.status(404).json({ message: 'Movie not found' });
         }
@@ -105,5 +137,6 @@ module.exports = {
     getMovieById,
     updateMovieById,
     deleteMovieById,
+    getMovieByGenre,
     getMovieYOR, 
 };
